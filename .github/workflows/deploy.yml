@@ -21,4 +21,5 @@ jobs:
         aws-region: us-east-2
 
     - name: Deploy to S3
-      run: aws s3 sync . s3://your-s3-bucket-name
+      run: 
+          aws s3 sync build/ s3://${{ secrets.S3_BUCKET_NAME }}
