@@ -1,23 +1,28 @@
-name: Deploy to AWS S3
+name: Sync to S3
+
 on:
   push:
     branches:
-      - main
+      - main  # Adjust the branch name if needed
 
 jobs:
-  deploy:
+  sync_to_s3:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Configure AWS Credentials
+      - name: Prepare Files for Sync
+        run: |
+          mkdir -p synced_files
+          # Copy files/directories you want to sync to the synced_files directory
+          cp -r your_directory synced_files
+
+      - name: Upload to S3
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy to S3 bucket
-        run: aws s3 sync . s3://${{ secrets.S3_BUCKET_NAME }}
+      - run: aws s3 sync synced_files s3://cicdhost1/Testing/
