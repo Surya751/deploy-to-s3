@@ -1,28 +1,49 @@
-name: Sync to S3
+name: Deploy to S3 
 
 on:
   push:
     branches:
-      - main  # Adjust the branch name if needed
+      - "main"
+
+permissions:
+  contents: read
 
 jobs:
-  sync_to_s3:
+  Build-and-Deploy:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Prepare Files for Sync
+      - name: Install dependencies
         run: |
-          mkdir -p synced_files
-          # Copy files/directories you want to sync to the synced_files directory
-          cp -r your_directory synced_files
+          yarn install
 
-      - name: Upload to S3
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - run: aws s3 sync synced_files s3://cicdhost1/Testing/
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Build the application
+        run: |
+          yarn build --if-present
+
+      - name: List Contents
+        run: ls -lra
+       
+      - name: Upload build folder to S3
+        run: |
+          aws s3 sync build/ s3://${{ secrets.S3_BUCKET_NAME }}
