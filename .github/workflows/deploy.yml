@@ -40,10 +40,10 @@ jobs:
       - name: Build the application
         run: |
           yarn build --if-present
-
       - name: List Contents
         run: ls -lra
        
       - name: Upload build folder to S3
         run: |
-          aws s3 sync build/ s3://${{ secrets.S3_BUCKET_NAME }}
+          aws s3 sync build/ s3://${{ secrets.S3_BUCKET_NAME }} --exclude "package.json"
+
