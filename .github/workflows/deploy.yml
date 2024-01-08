@@ -1,49 +1,53 @@
-name: Deploy to S3 
+name: CICD
 
 on:
   push:
-    branches:
-      - "main"
-
-permissions:
-  contents: read
+    branches: [deploy-to-ecs]
 
 jobs:
-  Build-and-Deploy:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [18.x]
-
+  build-and-deploy:
+    runs-on: [ubuntu-latest]
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v3
-
-      - name: Install dependencies
-        run: |
-          yarn install
-
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          mask-password: 'true'
+          
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: latest
+          REPOSITORY: mynodejs-repo
+        run: |
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to ECS.
+          docker build -t $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT    
 
-      - name: Build the application
-        run: |
-          yarn build --if-present
-      - name: List Contents
-        run: ls -lra
-       
-      - name: Upload build folder to S3
-        run: |
-          aws s3 sync build/ s3://${{ secrets.S3_BUCKET_NAME }} --exclude "package.json"
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: nodejs-app
+          container-name: node-js
+          image: ${{ steps.build-image.outputs.image }}    
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: myservice
+          cluster: mycluster
+          wait-for-service-stability: true    
 
