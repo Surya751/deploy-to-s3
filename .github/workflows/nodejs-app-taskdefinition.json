@@ -1,9 +1,9 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:us-east-2:744516531103:task-definition/nodejs-app-taskdefinition:1",
+    "taskDefinitionArn": "arn:aws:ecs:ap-southeast-1:744516531103:task-definition/nodejs-app-taskdefinition:5",
     "containerDefinitions": [
         {
             "name": "nodejs-app",
-            "image": "744516531103.dkr.ecr.us-east-2.amazonaws.com/my-noderepo:2228b0adcaa6a1727ea3805acc40eb0aa4eef5c3",
+            "image": "/mynodejs-repo:latest",
             "cpu": 0,
             "portMappings": [
                 {
@@ -16,10 +16,8 @@
             ],
             "essential": true,
             "environment": [],
-            "environmentFiles": [],
             "mountPoints": [],
             "volumesFrom": [],
-            "ulimits": [],
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
@@ -27,8 +25,7 @@
                     "awslogs-group": "/ecs/nodejs-app-taskdefinition",
                     "awslogs-region": "us-east-2",
                     "awslogs-stream-prefix": "ecs"
-                },
-                "secretOptions": []
+                }
             }
         }
     ],
@@ -36,7 +33,7 @@
     "taskRoleArn": "arn:aws:iam::744516531103:role/ecsTaskExecutionRole",
     "executionRoleArn": "arn:aws:iam::744516531103:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
-    "revision": 1,
+    "revision": 5,
     "volumes": [],
     "status": "ACTIVE",
     "requiresAttributes": [
@@ -47,16 +44,10 @@
             "name": "ecs.capability.execution-role-awslogs"
         },
         {
-            "name": "com.amazonaws.ecs.capability.ecr-auth"
-        },
-        {
             "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
         },
         {
             "name": "com.amazonaws.ecs.capability.task-iam-role"
-        },
-        {
-            "name": "ecs.capability.execution-role-ecr-pull"
         },
         {
             "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
@@ -82,7 +73,7 @@
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
     },
-    "registeredAt": "2024-01-10T06:06:09.190Z",
-    "registeredBy": "arn:aws:iam::744516531103:root",
+    "registeredAt": "2024-01-10T07:37:21.020Z",
+    "registeredBy": "arn:aws:iam::744516531103:user/Ecr_accesskey",
     "tags": []
 }
