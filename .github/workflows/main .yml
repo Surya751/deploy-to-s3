@@ -40,14 +40,14 @@ jobs:
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: nodejs-app
-          container-name: node-js
+          task-definition: .github/workflows/nodejs-app-taskdefinition.json
+          container-name: nodejs-app
           image: ${{ secrets.AWS_REGISTRY_URL }}/mynodejs-repo:latest
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: myservice
-          cluster: mycluster
+          service: nodejs-appservice
+          cluster: demonodejs
           wait-for-service-stability: true
