@@ -41,7 +41,7 @@ jobs:
         with:
           task-definition: .github/workflows/nodejs-app-taskdefinition.json
           container-name: nodejs-app
-          image: ${{ secrets.AWS_REGISTRY_URL }}/mynodejs-repo:latest
+          image: ${{ steps.build-image.outputs.image }} 
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
