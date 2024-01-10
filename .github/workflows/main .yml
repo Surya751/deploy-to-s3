@@ -48,5 +48,5 @@ jobs:
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: nodejs-appservice
-          cluster: demonodejs
+          cluster: democluster
           wait-for-service-stability: true
