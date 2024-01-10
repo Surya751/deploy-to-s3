@@ -36,18 +36,14 @@ jobs:
           docker push $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
 
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
+      - name: Download current ECS task definition
+        run: |
+          aws ecs describe-task-definition --task-definition stage-web --query taskDefinition > .github/workflows/nodejs-app-taskdefinition.json
+
+      - name: Render new ECS task definition
+        id: render-task-definition
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: .github/workflows/nodejs-app-taskdefinition.json
-          container-name: nodejs-app
-          image: ${{ secrets.AWS_REGISTRY_URL }}/mynodejs-repo:latest
-
-      - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: nodejs-appservice
-          cluster: nodecluster
+          container-name: nodecluster
           wait-for-service-stability: true
